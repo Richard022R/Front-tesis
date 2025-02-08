@@ -1,8 +1,9 @@
+//Sidebar para el profesor
 import React, { useState, useEffect, useRef } from "react";
 import { Home, BookOpen, FileText, User, Settings, LogOut } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ userInfo, activeSection }) => {
+const SidebarT = ({ userInfo, activeSection }) => {
   const [isOptionsVisible, setOptionsVisible] = useState(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const Sidebar = ({ userInfo, activeSection }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-64 h-screen bg-[#1a1f2e] text-white">
+    <div className="fixed top-0 left-0 w-64 h-screen bg-[#1a1f2e] text-white">      
       <div className="p-4">
         <div className="flex justify-between items-center mb-8">
           <img src="/unt.png" alt="Logo" className="h-10" />
@@ -111,7 +112,7 @@ const Sidebar = ({ userInfo, activeSection }) => {
                   isDropdownVisible ? "rotate-0" : "-rotate-90"
                 }`}
               >
-                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-down"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 9l6 6l6 -6" /></svg>
+                ▼
               </span>
             </button>
 
@@ -119,7 +120,7 @@ const Sidebar = ({ userInfo, activeSection }) => {
               className={`mt-2 rounded shadow-lg text-center transition-all duration-300 ${
                 isDropdownVisible ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
               } overflow-hidden`}
-            >
+            >                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
               {userInfo.typeTesis === "Suficiencia"
                 ? ["anexo30", "extras"].map((option) => (
                     <Link
@@ -161,4 +162,4 @@ const Sidebar = ({ userInfo, activeSection }) => {
   );
 };
 
-export default Sidebar;
+export default SidebarT;    

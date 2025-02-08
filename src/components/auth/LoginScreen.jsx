@@ -3,55 +3,20 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAuth } from '@/components/auth/AuthContext';
 
 const LoginScreen = () => {
-  const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/api/v1/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-  
-      let data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || 'Error en el inicio de sesión');
-      }
-  
-      data = data["user"];
-      const userInfo = {
-        id: data._id,
-        nombre: data.name || '',
-        apellidoPaterno: data.fatherLastName || '',
-        apellidoMaterno: data.motherLastName || '',
-        nombreCompleto: `${data.name || ''} ${data.fatherLastName || ''} ${data.motherLastName || ''}`.trim(),
-        email: email,
-        codigo: data.code || '',
-        numeroDocumento: data.documentNumber || '',
-        typeTesis: data.typeTesis || '',
-        role: data.role || '', // Aquí obtenemos el rol
-      };
-  
-      localStorage.setItem('userInfo', JSON.stringify(userInfo));
-  
-      // Redirigir dependiendo del rol
-      if (userInfo.role === 'admin') {
-        navigate('/Secretaria'); // Ruta para el panel de administración
-      } else {
-        navigate('/dashboard'); // Ruta para usuarios regulares
-      }
-    } catch (error) {
-      setLoginError(error.message || 'Error en el inicio de sesión');
-      console.error('Error en el inicio de sesión:', error);
+    const result = await login(email, password);
+    
+    if (!result.success) {
+      setLoginError(result.error || 'Error en el inicio de sesión');
     }
   };
 

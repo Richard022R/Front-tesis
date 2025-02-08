@@ -1,35 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Outlet, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import Sidebar from '../shared/Sidebar';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const location = useLocation();
   
-  const [userInfo, setUserInfo] = useState(() => {
-    const infoGuardada = localStorage.getItem('userInfo');
-    return infoGuardada ? JSON.parse(infoGuardada) : null;
-  });
-
-  // Protección de ruta
-  useEffect(() => {
-    if (!userInfo) {
-      navigate('/login');
-    }
-  }, [userInfo, navigate]);
-
-  // Obtener la sección activa de la URL
   const activeSection = location.pathname.split('/')[2] || 'inicio';
 
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar 
         userInfo={{
-          nombre: userInfo?.nombreCompleto || userInfo?.nombre || "Usuario Anónimo",
-          codigo: userInfo?.codigo || "Sin código",
-          email: userInfo?.email || "Sin email",
-          typeTesis: userInfo?.typeTesis || "Desconocido",
-          id: userInfo?.id
+          nombre: user?.nombreCompleto || user?.nombre || "Usuario Anónimo",
+          codigo: user?.codigo || "Sin código",
+          email: user?.email || "Sin email",
+          typeTesis: user?.typeTesis || "Desconocido",
+          id: user?.id
         }}
         activeSection={activeSection}
       />
