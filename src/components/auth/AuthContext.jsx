@@ -41,42 +41,32 @@ export const AuthProvider = ({ children }) => {
         },
         body: JSON.stringify({ email, password }),
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         throw new Error(data.message || 'Error en el inicio de sesión');
       }
-
-      const userData = data.user;
-      const userInfo = {
-        id: userData._id,
-        nombre: userData.name || '',
-        apellidoPaterno: userData.fatherLastName || '',
-        apellidoMaterno: userData.motherLastName || '',
-        nombreCompleto: `${userData.name || ''} ${userData.fatherLastName || ''} ${userData.motherLastName || ''}`.trim(),
-        email: email,
-        codigo: userData.code || '',
-        numeroDocumento: userData.documentNumber || '',
-        typeTesis: userData.typeTesis || '',
-        role: userData.role || '',
-      };
-
-      localStorage.setItem('userInfo', JSON.stringify(userInfo));
-      setUser(userInfo);
-
-      // Redirigir según el rol
-      if (userInfo.role === 'admin') {
+  
+      const { token, user } = data;
+  
+      localStorage.setItem('userInfo', JSON.stringify(user));
+      localStorage.setItem('token', token); // Guarda el token
+  
+      setUser(user);
+  
+      if (user.role === 'admin') {
         navigate('/Secretaria');
       } else {
         navigate('/dashboard');
       }
-
+  
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
     }
   };
+  
 
   const logout = () => {
     localStorage.removeItem('userInfo');

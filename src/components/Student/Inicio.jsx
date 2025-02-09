@@ -19,37 +19,32 @@ const ChevronDownIcon = ({ className }) => (
   </svg>
 );
 
-const Inicio = ({ userInfo }) => {
+const Inicio = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [tesis, setTesis] = useState(null);
-  const [user, setUser] = useState(null);
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
   useEffect(() => {
-    if (!userInfo) {
-      console.error(
-        "No se encontró un ID de usuario en el almacenamiento local"
-      );
-      return;
-    }
+    if(userInfo.status !== 0) {
 
-    const fetchUserFiles = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/v1/users/${userInfo.id}/files`
-        );
-        if (!response.ok) {
-          throw new Error("Error al obtener los archivos del usuario");
+      const fetchUserFiles = async () => {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/api/v1/users/${userInfo.userId}/files`
+          );
+          if (!response.ok) {
+            throw new Error("Error al obtener los archivos del usuario");
+          }
+          const result = await response.json();
+          setTesis(result.data?.tesis || null);
+        } catch (error) {
+          console.error("Error al obtener los archivos:", error.message);
         }
-        const result = await response.json();
-        setTesis(result.data?.tesis || null);
-        setUser(result.data?.user || null);
-      } catch (error) {
-        console.error("Error al obtener los archivos:", error.message);
-      }
-    };
-
-    fetchUserFiles();
-  }, [userInfo]);
+      };
+      
+      fetchUserFiles();
+    }
+  }, []);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);

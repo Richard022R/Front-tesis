@@ -15,6 +15,9 @@ import Anexo30 from './components/Student/Anexo30';
 import Extras from './components/Student/Extras';
 
 function App() {
+  
+  
+
   return (
     <Router>
       <AuthProvider>
@@ -55,7 +58,7 @@ function App() {
             <Route path="inicio" element={<Inicio />} />
             <Route path="tesis" element={<div>Proceso de Tesis</div>} />
             <Route path="ajustes" element={<Ajustes />} />
-            <Route path="anexo11" element={<div>Hola anexo11</div>} />
+            <Route path="anexo11" element={<Anexo11 />} />
             <Route path="anexo30" element={<div>Hola anexo30</div>} />
             <Route path="extras" element={<div>Hola extras</div>} />
             <Route index element={<Navigate to="inicio" replace />} />
