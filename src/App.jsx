@@ -59,8 +59,8 @@ function App() {
             <Route path="tesis" element={<div>Proceso de Tesis</div>} />
             <Route path="ajustes" element={<Ajustes />} />
             <Route path="anexo11" element={<Anexo11 />} />
-            <Route path="anexo30" element={<div>Hola anexo30</div>} />
-            <Route path="extras" element={<div>Hola extras</div>} />
+            <Route path="anexo30" element={<Anexo30 />} />
+            <Route path="extras" element={<Extras />} />
             <Route index element={<Navigate to="inicio" replace />} />
           </Route>
 

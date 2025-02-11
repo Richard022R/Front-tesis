@@ -2,48 +2,24 @@ import React, { useState, useEffect } from "react";
 
 const Anexo11 = () => {
   const [informeComiteEtica, setInformeComiteEtica] = useState(null);
-  const [dictamenAprobacionProyecto, setDictamenAprobacionProyecto] =
-    useState(null);
+  const [dictamenAprobacionProyecto, setDictamenAprobacionProyecto] = useState(null);
   const [tesisId, setTesisId] = useState("");
-  const [documentos, setDocumentos] = useState([]);
+  const [documentos, setDocumentos] = useState({});
+  const [message, setMessage] = useState(null);
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
-  useEffect(() => {
-    const updateUserInfo = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return logout();
-  
-        const response = await fetch('http://localhost:3000/api/v1/me', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        const data = await response.json();
-  
-        if (response.ok) {
-          localStorage.setItem('userInfo', JSON.stringify(data.user));
-        } else {
-          console.error(data.message);
-          logout();
-        }
-      } catch (error) {
-        console.error("Error al obtener los archivos:", error.message);
-        logout();
-      }
-    };
-  
-    updateUserInfo();
-  }, []);
-  
-
-  // Cargar los archivos al iniciar la aplicación
+  // Obtener la tesis del usuario
   useEffect(() => {
     const fetchTesis = async () => {
       try {
+        const token = localStorage.getItem('token');
         const response = await fetch(
-          `http://localhost:3000/api/v1/tesis/user/${userInfo.userId}`
+          `http://localhost:3000/api/v1/tesis/user/${userInfo.userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         const data = await response.json();
         if (response.ok) {
@@ -59,89 +35,109 @@ const Anexo11 = () => {
     fetchTesis();
   }, [userInfo.userId]);
 
-  // Cargar los archivos cuando se actualice la tesis
+  // Obtener los documentos del Anexo 11
   useEffect(() => {
-    const fetchDocumentos = async () => {
-      if (!tesisId) return; // Espera a que `tesisId` esté disponible
+    const fetchAnexo11Documents = async () => {
+      if (!tesisId) return;
+
       try {
+        const token = localStorage.getItem('token');
         const response = await fetch(
-          `http://localhost:3000/api/v1/tesis/anexo11/${tesisId}`
+          `http://localhost:3000/api/v1/tesis/anexo11/${tesisId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         const data = await response.json();
         if (response.ok) {
-          setDocumentos(data.data);
+          setDocumentos(data.data || {});
         } else {
           console.error(data.message);
         }
       } catch (error) {
-        console.error("Error al obtener los documentos:", error);
+        console.error("Error al obtener los documentos del Anexo 11:", error);
       }
     };
 
-    fetchDocumentos();
+    fetchAnexo11Documents();
   }, [tesisId]);
 
   const handleSubmit = async (e) => {
-    // e.preventDefault(); // Prevenir comportamiento por defecto del formulario
-  
+    e.preventDefault();
+
     const formData = new FormData();
-    formData.append("userId", userInfo.userId); // Agregar userId al formulario
-  
+    formData.append("userId", userInfo.userId);
+
     if (informeComiteEtica) {
-      formData.append("informeComiteEtica", informeComiteEtica); // Documento obligatorio
+      formData.append("informeComiteEtica", informeComiteEtica);
     }
-  
     if (dictamenAprobacionProyecto) {
-      formData.append("dictamenAprobacionProyecto", dictamenAprobacionProyecto); // Documento obligatorio
+      formData.append("dictamenAprobacionProyecto", dictamenAprobacionProyecto);
     }
-  
+
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch("http://localhost:3000/api/v1/tesis", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
-  
+
       if (response.ok) {
-        const responseData = await response.json(); // Obtener datos del servidor
-  
-        // Guardar los datos del usuario en el localStorage
-        localStorage.setItem("userInfo", JSON.stringify(responseData.user));
-  
-        // Mostrar mensaje de éxito
-        alert("Tesis creada exitosamente");
-  
-        // Limpiar el estado de los archivos
-        setInformeComiteEtica(null);
-        setDictamenAprobacionProyecto(null);
-  
-        // Resetear el formulario
-        if (e.target && typeof e.target.reset === "function") {
-          e.target.reset();
+        const result = await response.json();
+        setMessage({ type: 'success', text: 'Documentos subidos exitosamente.' });
+        console.log('Respuesta del servidor:', result);
+
+        // Actualizar la lista de documentos después de subir
+        const fetchResponse = await fetch(
+          `http://localhost:3000/api/v1/tesis/anexo11/${tesisId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const fetchData = await fetchResponse.json();
+        if (fetchResponse.ok) {
+          setDocumentos(fetchData.data || {});
         }
       } else {
-        const errorData = await response.json();
-        console.error("Error en la respuesta:", errorData);
-        alert(`Error: ${errorData.message || "No se pudo crear la tesis"}`);
+        const errorResult = await response.json();
+        setMessage({ type: 'error', text: errorResult.message || 'Error al subir los documentos.' });
+        console.error('Error en la respuesta:', errorResult);
       }
     } catch (error) {
-      console.error("Error en la solicitud:", error);
-      alert("Ocurrió un error al enviar los documentos. Verifique su conexión o contacte soporte.");
+      setMessage({ type: 'error', text: 'Error de conexión con el servidor.' });
+      console.error('Error:', error);
     }
   };
-  
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">
-        Crear Tesis con Documentos del Anexo 11
+    <div className="container mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">
+        Subir Documentos al Anexo 11
       </h1>
 
+      {message && (
+        <div
+          className={`p-4 mb-4 rounded ${
+            message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
       {userInfo.status === 0 && (
-        <form onSubmit={() => handleSubmit()} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="informeComiteEtica"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-600 mb-1"
             >
               Informe Comité de Ética:
             </label>
@@ -157,7 +153,7 @@ const Anexo11 = () => {
           <div>
             <label
               htmlFor="dictamenAprobacionProyecto"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-600 mb-1"
             >
               Dictamen de Aprobación del Proyecto:
             </label>
@@ -172,44 +168,49 @@ const Anexo11 = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Subir Archivos
           </button>
         </form>
       )}
 
-      <section className="mt-6">
-        <h2 className="text-xl font-bold mb-2">Documentos Subidos</h2>
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 border">Nombre del Documento</th>
-              <th className="px-4 py-2 border">Fecha de Subida</th>
-              <th className="px-4 py-2 border">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(documentos).map(([key, doc]) => (
-              <tr key={key}>
-                <td className="px-4 py-2 border">{doc.fileName}</td>
-                <td className="px-4 py-2 border">
-                  {new Date(doc.uploadDate).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-2 border">
-                  <a
-                    href={`http://localhost:3000/api/v1/tesis/download/${tesisId}/${key}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    Descargar
-                  </a>
-                </td>
+      {/* Sección de archivos subidos */}
+      <section className="mt-8">
+        <h2 className="text-xl font-bold mb-4">Documentos Subidos</h2>
+        {Object.keys(documentos).length > 0 ? (
+          <table className="min-w-full bg-white border border-gray-200">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 border">Nombre del Documento</th>
+                <th className="px-4 py-2 border">Fecha de Subida</th>
+                <th className="px-4 py-2 border">Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {Object.entries(documentos).map(([key, doc]) => (
+                <tr key={key}>
+                  <td className="px-4 py-2 border">{doc.fileName}</td>
+                  <td className="px-4 py-2 border">
+                    {new Date(doc.uploadDate).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-2 border">
+                    <a
+                      href={`http://localhost:3000/api/v1/tesis/download/${tesisId}/${key}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      Descargar
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="text-gray-600">No hay documentos subidos aún.</p>
+        )}
       </section>
     </div>
   );
